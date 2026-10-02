@@ -5,7 +5,7 @@
 > **Purpose of this file:** background context for a *planning / advisory* agent that helps the team decide on track, factory design, and execution plan.
 > **This file is NOT a seat mandate.** Do not load it into any BAND seat's standing instructions — it contains track-specific detail, which disqualifies the entry if it appears in a mandate (see §6.1).
 >
-> **Source of truth:** `OFFICIAL_SOURCES.md` (verbatim participant guide + full pocketful specs + banned mandate vocabulary, repo commit `803560d`, 2026-09-26). This file is a summary; when they differ, the official file wins. Always paste the **full** stage spec into the room, never this summary.
+> **Source of truth:** `OFFICIAL_SOURCES.md` (verbatim participant guide + banned mandate vocabulary) and `spec/stage-1..4.md` (verbatim pocketful specs; repo commit `803560d`, 2026-09-26). This file is a summary; when they differ, the official file wins. Always paste the **full** stage spec into the room, never this summary.
 >
 > Sources (fetched 2026-10-02):
 > - https://lablab.ai/ai-hackathons/wearedevelopers-hackathon
@@ -26,7 +26,7 @@
 | Team size | 1–6 people |
 | Prize pool | $6,000 cash across 2 tracks (+ $300 Featherless credits for first winning team) |
 | Platforms to join | lablab.ai (enroll) + lablab Discord + BAND Discord |
-| Detailed spec | In the starter repo: `pocketful/spec/stage-1..4.md` (summary in §4). Limits: 2 vCPU, 2 GiB, 50 concurrent requests, 5 s/request |
+| Detailed spec | `docs/spec/stage-1..4.md`, copied verbatim from the starter repo's `pocketful/spec/` (summary in §4). Limits: 2 vCPU, 2 GiB, 50 concurrent requests, 5 s/request |
 | Starter repo | https://github.com/band-ai/dark-factory-wearedevs (commit `803560d`, 2026-09-26). Clone it to run the harness; do **not** submit into it |
 | Bonus | Sign-ups are eligible for a free ticket to WeAreDevelopers World Congress NA (San Jose, Sep 23–25) |
 

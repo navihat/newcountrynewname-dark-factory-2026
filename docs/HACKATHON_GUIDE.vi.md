@@ -5,7 +5,7 @@
 > **Mục đích:** bản tiếng Việt để đọc, có cùng nội dung với `AGENT_CONTEXT.md` (bản tiếng Anh dành cho agent tư vấn/lập kế hoạch).
 > **Đây KHÔNG phải mandate.** Không đưa file này vào chỉ dẫn cố định của bất kỳ seat nào trong BAND, vì mandate chứa chi tiết riêng của track sẽ khiến bài bị loại (xem §6.1).
 >
-> **Nguồn chuẩn:** `OFFICIAL_SOURCES.md` (nguyên văn participant guide + toàn bộ spec pocketful + danh sách từ cấm trong mandate, commit `803560d` của repo, 26/09/2026). File này chỉ là tóm tắt; nếu có khác biệt thì theo file chính thức. Luôn dán **toàn văn** spec của stage vào room, không dán bản tóm tắt.
+> **Nguồn chuẩn:** `OFFICIAL_SOURCES.md` (nguyên văn participant guide + danh sách từ cấm trong mandate) và `spec/stage-1..4.md` (nguyên văn spec pocketful, bản dịch tiếng Việt ở `spec/stage-N.vi.md`; commit `803560d` của repo, 26/09/2026). File này chỉ là tóm tắt; nếu có khác biệt thì theo file chính thức. Luôn dán **toàn văn** spec của stage vào room, không dán bản tóm tắt.
 >
 > Nguồn (lấy ngày 02/10/2026):
 > - https://lablab.ai/ai-hackathons/wearedevelopers-hackathon
@@ -26,7 +26,7 @@
 | Số người/đội | 1–6 |
 | Tổng giải | $6.000 tiền mặt chia cho 2 track, cộng $300 credit Featherless cho đội thắng đầu tiên |
 | Nơi tham gia | lablab.ai (đăng ký) + Discord lablab + Discord BAND |
-| Spec chi tiết | Trong repo starter: `pocketful/spec/stage-1..4.md` (tóm tắt ở §4). Giới hạn: 2 vCPU, 2 GiB, 50 request đồng thời, 5 s/request |
+| Spec chi tiết | `docs/spec/stage-1..4.md`, sao chép nguyên văn từ `pocketful/spec/` của repo starter; bản dịch đọc ở `stage-N.vi.md` (tóm tắt ở §4). Giới hạn: 2 vCPU, 2 GiB, 50 request đồng thời, 5 s/request |
 | Repo starter | https://github.com/band-ai/dark-factory-wearedevs (commit `803560d`, 26/09/2026). Clone về để chạy harness; **không** nộp bài vào repo này |
 | Quà thêm | Người đăng ký đủ điều kiện nhận vé miễn phí WeAreDevelopers World Congress NA (San Jose, 23–25/9) |
 
