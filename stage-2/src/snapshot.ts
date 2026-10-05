@@ -1,0 +1,142 @@
+import { validation } from './errors';
+import { HANDLE_PATTERN, MINOR_UNITS, readPayment, readRequest } from './fixture';
+import { isPasswordHash } from './passwords';
+import * as read from './reader';
+import { emptyState, idempotencyKey, type IdempotencyRecord, type State, type User } from './state';
+import { type JsonObject } from './util';
+
+export const TRACK = 'pocketful';
+export const FORMAT_VERSION = 1;
+
+export function exportState(state: State): JsonObject {
+  return {
+    track: TRACK,
+    format_version: FORMAT_VERSION,
+    state: {
+      currency: state.currency,
+      minor_units: state.minorUnits,
+      users: [...state.users.values()].map((u) => ({
+        id: u.id,
+        email: u.email,
+        handle: u.handle,
+        display_name: u.displayName,
+        password_hash: u.passwordHash,
+        balance: u.balance,
+      })),
+      tokens: [...state.tokens].map(([token, userId]) => ({ token, user_id: userId })),
+      payments: [...state.payments.values()].map((p) => ({
+        id: p.id,
+        from_user_id: p.fromUserId,
+        to_user_id: p.toUserId,
+        amount: p.amount,
+        note: p.note,
+        visibility: p.visibility,
+        request_id: p.requestId,
+        settlement_id: p.settlementId,
+        created_at: p.createdAt,
+      })),
+      requests: [...state.requests.values()].map((r) => ({
+        id: r.id,
+        requester_id: r.requesterId,
+        payer_id: r.payerId,
+        amount: r.amount,
+        note: r.note,
+        status: r.status,
+        payment_id: r.paymentId,
+        created_at: r.createdAt,
+      })),
+      idempotency: [...state.idempotency.values()].map((i) => ({
+        user_id: i.userId,
+        key: i.key,
+        method: i.method,
+        path: i.path,
+        fingerprint: i.fingerprint,
+        status: i.status,
+        response: i.response,
+      })),
+      settlement_operator_ids: [...state.operatorIds],
+      counters: { ...state.counters },
+    },
+  };
+}
+
+/** Builds a complete new state from an export; throws 422 before anything is replaced. */
+export function importState(raw: JsonObject): State {
+  if (raw.track !== TRACK) throw validation(`track must be "${TRACK}"`);
+  if (raw.format_version !== FORMAT_VERSION) throw validation(`format_version must be ${FORMAT_VERSION}`);
+  const source = read.object(raw.state, 'state');
+
+  const state = emptyState();
+  state.currency = read.string(source.currency, 'currency');
+  state.minorUnits = read.integer(source.minor_units, 'minor_units');
+  if (!MINOR_UNITS.includes(state.minorUnits)) throw validation('minor_units must be 0, 2 or 3');
+
+  const emails = new Set<string>();
+  const handles = new Set<string>();
+  for (const entry of read.array(source.users, 'users')) {
+    const user = readUser(entry);
+    if (state.users.has(user.id) || handles.has(user.handle) || emails.has(user.email.toLowerCase())) {
+      throw validation('users must have unique ids, handles and emails');
+    }
+    state.users.set(user.id, user);
+    handles.add(user.handle);
+    emails.add(user.email.toLowerCase());
+  }
+  for (const entry of read.array(source.tokens, 'tokens')) {
+    const token = read.object(entry, 'token entry');
+    const userId = read.string(token.user_id, 'token user_id');
+    if (!state.users.has(userId)) throw validation(`token refers to unknown user ${userId}`);
+    state.tokens.set(read.string(token.token, 'token'), userId);
+  }
+  for (const entry of read.array(source.payments, 'payments')) {
+    const payment = readPayment(entry, state);
+    state.payments.set(payment.id, payment);
+  }
+  for (const entry of read.array(source.requests, 'requests')) {
+    const request = readRequest(entry, state);
+    state.requests.set(request.id, request);
+  }
+  for (const entry of read.array(source.idempotency, 'idempotency')) {
+    const record = readIdempotency(entry, state);
+    state.idempotency.set(idempotencyKey(record.userId, record.method, record.path, record.key), record);
+  }
+  for (const operator of read.array(source.settlement_operator_ids, 'settlement_operator_ids')) {
+    state.operatorIds.add(read.string(operator, 'settlement operator id'));
+  }
+  const counters = read.object(source.counters, 'counters');
+  for (const kind of Object.keys(state.counters) as (keyof State['counters'])[]) {
+    state.counters[kind] = read.integer(counters[kind], `counter ${kind}`);
+  }
+  return state;
+}
+
+function readUser(entry: unknown): User {
+  const raw = read.object(entry, 'user');
+  const handle = read.string(raw.handle, 'user handle');
+  if (!HANDLE_PATTERN.test(handle)) throw validation(`invalid handle ${handle}`);
+  const passwordHash = read.string(raw.password_hash, 'user password_hash');
+  if (!isPasswordHash(passwordHash)) throw validation('user password_hash is not a known hash');
+  return {
+    id: read.id(raw.id, 'user id'),
+    email: read.string(raw.email, 'user email'),
+    handle,
+    displayName: read.string(raw.display_name, 'user display_name'),
+    passwordHash,
+    balance: read.integer(raw.balance, 'user balance'),
+  };
+}
+
+function readIdempotency(entry: unknown, state: State): IdempotencyRecord {
+  const raw = read.object(entry, 'idempotency record');
+  const userId = read.string(raw.user_id, 'idempotency user_id');
+  if (!state.users.has(userId)) throw validation(`idempotency record refers to unknown user ${userId}`);
+  return {
+    userId,
+    key: read.string(raw.key, 'idempotency key'),
+    method: read.string(raw.method, 'idempotency method'),
+    path: read.string(raw.path, 'idempotency path'),
+    fingerprint: read.string(raw.fingerprint, 'idempotency fingerprint'),
+    status: read.integer(raw.status, 'idempotency status', 200),
+    response: read.string(raw.response, 'idempotency response'),
+  };
+}
