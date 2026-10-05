@@ -1,0 +1,4 @@
+# Separate git repositories nested in this folder
+/kickoff/dark-factory-wearedevs/
+
+.venv/
