@@ -254,12 +254,12 @@ export const findPay = (list, from, to, amount, note) => list.find((p) => p.from
 export const refund = (token, id, body, key = uniq('rf')) => http('POST', `/payments/${id}/refunds`, { token, key, body });
 export const batch = (token, body, key = uniq('cb')) => http('POST', '/correction-batches', { token, key, body });
 export const bItem = (payment_id, over = {}) => ({ payment_id, expected_revision: 1, amount: 0, effective_at: at(Date.now() - 60 * 1000), reason: 'batch fix', ...over });
-/** the same instant written with a +02:00 offset (seconds precision) */
+/** the same instant written with a +02:00 offset (millisecond precision) */
 export function plus2(instantStr) {
   const t = Date.parse(instantStr);
   const l = new Date(t + 2 * 3600e3);
   const p = (n) => String(n).padStart(2, '0');
-  return `${l.getUTCFullYear()}-${p(l.getUTCMonth() + 1)}-${p(l.getUTCDate())}T${p(l.getUTCHours())}:${p(l.getUTCMinutes())}:${p(l.getUTCSeconds())}+02:00`;
+  return `${l.getUTCFullYear()}-${p(l.getUTCMonth() + 1)}-${p(l.getUTCDate())}T${p(l.getUTCHours())}:${p(l.getUTCMinutes())}:${p(l.getUTCSeconds())}.${String(l.getUTCMilliseconds()).padStart(3, '0')}+02:00`;
 }
 export const allMe = async (t, handles = ['ada', 'bob', 'cy', 'dee', 'op', 'zed']) => Promise.all(handles.filter((h) => t[h]).map((h) => me(t[h])));
 export const payment = async (token, id) => { const r = await revisions(token, id); return r; };
