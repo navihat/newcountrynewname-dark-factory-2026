@@ -3,6 +3,7 @@ dist
 acceptance-tests
 acceptance-tests-s2
 acceptance-tests-s3
+acceptance-tests-s4
 *.log
 .env
 

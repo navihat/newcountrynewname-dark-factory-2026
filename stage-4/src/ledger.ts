@@ -71,3 +71,12 @@ export function hasHistoricalOverdraft(state: State, nowMs: number, parties: Use
   }
   return false;
 }
+
+/** Total already refunded against a payment. */
+export function refundedAmount(state: State, paymentId: string): number {
+  let refunded = 0;
+  for (const payment of state.payments.values()) {
+    if (payment.refundOf === paymentId) refunded += currentRevision(payment).amount;
+  }
+  return refunded;
+}

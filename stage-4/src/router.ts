@@ -14,6 +14,8 @@ import { me } from './routes/me';
 import { createPayment } from './routes/payments';
 import { cancelRequest, createRequest, declineRequest, listRequests, payRequest } from './routes/requests';
 import { correctPayment, listRevisions } from './routes/corrections';
+import { createCorrectionBatch } from './routes/correctionBatches';
+import { refundPayment } from './routes/refunds';
 import { statement } from './routes/statement';
 import { createSettlement } from './routes/settlements';
 import { createSplit } from './routes/splits';
@@ -52,6 +54,8 @@ const routes: Route[] = [
   route('GET', '/statement', statement),
   route('POST', '/payments/:id/corrections', correctPayment),
   route('GET', '/payments/:id/revisions', listRevisions),
+  route('POST', '/payments/:id/refunds', refundPayment),
+  route('POST', '/correction-batches', createCorrectionBatch),
   route('POST', '/authorizations', createAuthorization),
   route('GET', '/authorizations', listAuthorizations),
   route('POST', '/authorizations/:id/capture', captureAuthorization),

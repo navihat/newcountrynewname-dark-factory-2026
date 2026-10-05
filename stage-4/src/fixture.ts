@@ -105,7 +105,7 @@ function readCreatedAt(value: unknown, what: string, rules: TimeRules): string {
 
 function readRevisions(value: unknown, createdAt: string, amount: number): PaymentRevision[] {
   if (value === undefined || value === null) {
-    return [{ revision: 1, amount, effectiveAt: createdAt, recordedAt: createdAt, reason: '' }];
+    return [{ revision: 1, amount, effectiveAt: createdAt, recordedAt: createdAt, reason: '', batchId: null }];
   }
   const revisions = read.array(value, 'payment revisions').map((entry, index): PaymentRevision => {
     const raw = read.object(entry, 'payment revision');
@@ -116,6 +116,7 @@ function readRevisions(value: unknown, createdAt: string, amount: number): Payme
       effectiveAt: readInstant(raw.effective_at, 'revision effective_at').text,
       recordedAt: readInstant(raw.recorded_at, 'revision recorded_at').text,
       reason: read.string(raw.reason ?? '', 'revision reason'),
+      batchId: read.optional(raw.correction_batch_id, (v) => read.string(v, 'revision correction_batch_id'), null),
     };
   });
   if (revisions.length === 0) throw validation('a payment needs at least one revision');
@@ -141,6 +142,7 @@ export function readPayment(entry: unknown, state: State, rules: TimeRules): Pay
     visibility: read.optional(raw.visibility, (v) => read.oneOf(v, VISIBILITIES, 'payment visibility'), 'public'),
     requestId: read.optional(raw.request_id, (v) => read.string(v, 'payment request_id'), null),
     authorizationId: read.optional(raw.authorization_id, (v) => read.string(v, 'payment authorization_id'), null),
+    refundOf: read.optional(raw.refund_of, (v) => read.string(v, 'payment refund_of'), null),
     settlementId: read.optional(raw.settlement_id, (v) => read.string(v, 'payment settlement_id'), null),
     createdAt,
     revisions: readRevisions(raw.revisions, createdAt, amount),

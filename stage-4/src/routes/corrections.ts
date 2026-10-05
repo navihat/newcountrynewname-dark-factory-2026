@@ -3,7 +3,7 @@ import { ApiError, forbidden, insufficientFunds, notFound, validation } from '..
 import { authed, json, parseJsonObject } from '../http';
 import { availableFunds } from '../holds';
 import { runIdempotent } from '../idempotency';
-import { currentRevision, hasHistoricalOverdraft } from '../ledger';
+import { currentRevision, hasHistoricalOverdraft, refundedAmount } from '../ledger';
 import { store, type Payment, type PaymentRevision, type User } from '../state';
 import { characterCount, nowRfc3339, parseInstant, type JsonObject } from '../util';
 import { MAX_AMOUNT } from '../validation';
@@ -11,7 +11,7 @@ import { userById } from '../wallet';
 
 const MAX_REASON_LENGTH = 200;
 
-function revisionView(payment: Payment, revision: PaymentRevision) {
+export function revisionView(payment: Payment, revision: PaymentRevision) {
   return {
     payment_id: payment.id,
     revision: revision.revision,
@@ -19,17 +19,18 @@ function revisionView(payment: Payment, revision: PaymentRevision) {
     effective_at: revision.effectiveAt,
     recorded_at: revision.recordedAt,
     reason: revision.reason,
+    correction_batch_id: revision.batchId,
   };
 }
 
-interface Correction {
+export interface Correction {
   expectedRevision: number;
   amount: number;
   effectiveAt: string;
   reason: string;
 }
 
-function readCorrection(body: JsonObject): Correction {
+export function readCorrection(body: JsonObject): Correction {
   const { expected_revision: expected, amount, effective_at: effective, reason } = body;
   if (typeof expected !== 'number' || !Number.isInteger(expected) || expected < 1) {
     throw validation('expected_revision must be a positive integer');
@@ -53,16 +54,21 @@ export const correctPayment = authed((ctx, user, [id]) => {
     if (!payment) throw notFound(`no payment ${id}`);
     if (payment.fromUserId !== user.id) throw forbidden('only the sender may correct a payment');
     const correction = readCorrection(body);
-    if (payment.settlementId !== null || payment.authorizationId !== null) {
-      throw new ApiError(422, 'linked_payment_immutable', 'settlement members and captures cannot be corrected');
+    if (payment.settlementId !== null || payment.authorizationId !== null || payment.refundOf !== null) {
+      throw new ApiError(422, 'linked_payment_immutable', 'settlement members, captures and refunds cannot be corrected here');
     }
     const latest = currentRevision(payment);
     if (correction.expectedRevision !== latest.revision) {
       throw new ApiError(409, 'stale_revision', `the payment is at revision ${latest.revision}`);
     }
+    if (correction.amount < refundedAmount(store.state, payment.id)) throw refundExceedsPayment();
     return revisionView(payment, appendRevision(payment, latest, correction));
   });
 });
+
+export function refundExceedsPayment(): ApiError {
+  return new ApiError(422, 'refund_exceeds_payment', 'refunds already issued exceed the corrected amount');
+}
 
 /** Appends the revision and moves the difference, or leaves everything as it was and throws. */
 function appendRevision(payment: Payment, latest: PaymentRevision, correction: Correction): PaymentRevision {
@@ -79,6 +85,7 @@ function appendRevision(payment: Payment, latest: PaymentRevision, correction: C
     effectiveAt: correction.effectiveAt,
     recordedAt: nowRfc3339(),
     reason: correction.reason,
+    batchId: null,
   };
   payment.revisions.push(revision);
   if (hasHistoricalOverdraft(state, now(), [sender, receiver])) {

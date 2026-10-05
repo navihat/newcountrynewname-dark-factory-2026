@@ -20,6 +20,8 @@ export interface PaymentRevision {
   effectiveAt: string;
   recordedAt: string;
   reason: string;
+  /** Set when the revision was made as part of a correction batch. */
+  batchId: string | null;
 }
 
 export interface Payment {
@@ -32,6 +34,8 @@ export interface Payment {
   requestId: string | null;
   settlementId: string | null;
   authorizationId: string | null;
+  /** The payment this one refunds; null for every other payment. */
+  refundOf: string | null;
   createdAt: string;
   revisions: PaymentRevision[];
 }
@@ -90,6 +94,7 @@ export interface Counters {
   split: number;
   settlement: number;
   authorization: number;
+  correctionBatch: number;
 }
 
 export interface State {
@@ -122,7 +127,7 @@ export function emptyState(): State {
     statements: new Map(),
     idempotency: new Map(),
     operatorIds: new Set(),
-    counters: { user: 0, payment: 0, request: 0, split: 0, settlement: 0, authorization: 0 },
+    counters: { user: 0, payment: 0, request: 0, split: 0, settlement: 0, authorization: 0, correctionBatch: 0 },
   };
 }
 
@@ -144,7 +149,7 @@ export function findUserByEmail(state: State, email: string): User | undefined {
   return undefined;
 }
 
-const ID_PREFIX = { user: 'u_', payment: 'p_', request: 'rq_', split: 'sp_', settlement: 'st_', authorization: 'a_' } as const;
+const ID_PREFIX = { user: 'u_', payment: 'p_', request: 'rq_', split: 'sp_', settlement: 'st_', authorization: 'a_', correctionBatch: 'cb_' } as const;
 
 /** Generated payment ids are zero-padded so that sorting them as text sorts them by creation. */
 const ID_PADDING: Partial<Record<keyof Counters, number>> = { payment: 8 };

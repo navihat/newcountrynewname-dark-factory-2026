@@ -47,6 +47,7 @@ export function exportState(state: State): JsonObject {
         request_id: p.requestId,
         settlement_id: p.settlementId,
         authorization_id: p.authorizationId,
+        refund_of: p.refundOf,
         created_at: p.createdAt,
         revisions: p.revisions.map((r) => ({
           revision: r.revision,
@@ -54,6 +55,7 @@ export function exportState(state: State): JsonObject {
           effective_at: r.effectiveAt,
           recorded_at: r.recordedAt,
           reason: r.reason,
+          correction_batch_id: r.batchId,
         })),
       })),
       requests: [...state.requests.values()].map((r) => ({

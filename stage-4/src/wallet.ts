@@ -33,6 +33,7 @@ export function paymentView(payment: Payment, amount: number = payment.amount) {
     request_id: payment.requestId,
     settlement_id: payment.settlementId,
     authorization_id: payment.authorizationId,
+    refund_of: payment.refundOf,
     created_at: payment.createdAt,
   };
 }
@@ -82,6 +83,7 @@ export interface PaymentDraft {
   requestId: string | null;
   settlementId: string | null;
   authorizationId?: string | null;
+  refundOf?: string | null;
   createdAt: string;
 }
 
@@ -100,9 +102,10 @@ export function recordPayment(draft: PaymentDraft): Payment {
     requestId: draft.requestId,
     settlementId: draft.settlementId,
     authorizationId: draft.authorizationId ?? null,
+    refundOf: draft.refundOf ?? null,
     createdAt: draft.createdAt,
     revisions: [
-      { revision: 1, amount: draft.amount, effectiveAt: draft.createdAt, recordedAt: draft.createdAt, reason: '' },
+      { revision: 1, amount: draft.amount, effectiveAt: draft.createdAt, recordedAt: draft.createdAt, reason: '', batchId: null },
     ],
   };
   state.payments.set(payment.id, payment);
