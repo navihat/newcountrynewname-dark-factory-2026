@@ -32,7 +32,7 @@ export function user(id, handle, balance, extra = {}) {
 }
 
 export function fixture(over = {}) {
-  return {
+  const base = {
     currency: 'EUR',
     minor_units: 2,
     users: [
@@ -47,6 +47,8 @@ export function fixture(over = {}) {
     settlement_operator_ids: ['u_op'],
     ...over,
   };
+  if (!('settlement_operator_ids' in over)) base.settlement_operator_ids = base.settlement_operator_ids.filter((id) => base.users.some((u) => u.id === id));
+  return base;
 }
 
 export async function reset(fx = fixture()) {

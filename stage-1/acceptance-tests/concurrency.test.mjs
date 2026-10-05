@@ -134,7 +134,8 @@ test('§1 concurrent settlements competing for the same funds: net sum conserved
   assert.equal(await balance(t.dee), 500 - okSettle * 150 - okPay * 75);
   assert.equal(await balance(t.cy), okSettle * 100);
   const feed = (await get(t.cy, '/activity?limit=200')).json.payments;
-  assert.equal(feed.length, okSettle);
+  assert.equal(feed.filter((p) => p.to_handle === 'cy').length, okSettle);
+  assert.equal(feed.filter((p) => p.settlement_id).length, okSettle * 2, 'whole settlements only (atomic)');
 });
 
 test('§7 concurrent identical split / request creation with unused key creates exactly one set of requests', async () => {

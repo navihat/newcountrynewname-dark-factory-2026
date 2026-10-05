@@ -102,9 +102,11 @@ test('§11 malformed batch shape -> 422 validation_failed (missing/non-array tra
     { transfers: [{ to_handle: 'bob', amount: 5 }] },
     { transfers: [{ from_handle: 'ada', amount: 5 }] },
     { transfers: [{ from_handle: 'ada', to_handle: 'bob' }] },
-    { transfers: [{ from_handle: 5, to_handle: 'bob', amount: 5 }] },
   ];
   for (const body of bad) expectErr(await settle(t.op, body), 422, 'validation_failed');
+  // ambiguity: wrong JSON type inside an entry may be 400 (§5) or 422 (§11 'malformed batch shape')
+  const wt = await settle(t.op, { transfers: [{ from_handle: 5, to_handle: 'bob', amount: 5 }] });
+  assert.ok(wt.status === 400 || wt.status === 422, wt.text);
   assert.equal(await totalBalance(t), 10000 + 2500 + 500 + 100000);
   expectErr(await http('POST', '/settlements', { token: t.op, key: uniq(), raw: '{"transfers":[' }), 400, 'malformed_request');
   expectErr(await http('POST', '/settlements', { token: t.op, key: uniq(), raw: '[]' }), 400, 'malformed_request');
@@ -250,7 +252,7 @@ test('§11 constituent visibility follows the ordinary feed rule: private only t
   const s = (await settle(t.op, { transfers: [tr('ada', 'bob', 10, { visibility: 'private', note: 'sec' }), tr('bob', 'cy', 10)] })).json;
   const [priv, pub] = s.payments;
   const ids = async (tok) => (await get(tok, '/activity?limit=200')).json.payments.map((p) => p.payment_id);
-  assert.deepEqual((await ids(t.ada)).sort(), [priv.payment_id].sort());
+  assert.deepEqual((await ids(t.ada)).sort(), [priv.payment_id, pub.payment_id].sort()); // pub is public
   assert.deepEqual((await ids(t.bob)).sort(), [priv.payment_id, pub.payment_id].sort());
   assert.deepEqual((await ids(t.cy)).sort(), [pub.payment_id].sort());
   assert.deepEqual(await ids(t.dee), [pub.payment_id]);
