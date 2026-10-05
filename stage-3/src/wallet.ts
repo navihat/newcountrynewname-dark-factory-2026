@@ -16,7 +16,8 @@ export function userById(id: string): User {
   return user;
 }
 
-export function paymentView(payment: Payment) {
+/** The payment as a receipt; `amount` overrides the original amount (statements show the selected revision). */
+export function paymentView(payment: Payment, amount: number = payment.amount) {
   const from = userById(payment.fromUserId);
   const to = userById(payment.toUserId);
   return {
@@ -25,7 +26,7 @@ export function paymentView(payment: Payment) {
     from_handle: from.handle,
     to_user_id: to.id,
     to_handle: to.handle,
-    amount: payment.amount,
+    amount,
     currency: store.state.currency,
     note: payment.note,
     visibility: payment.visibility,
@@ -100,6 +101,9 @@ export function recordPayment(draft: PaymentDraft): Payment {
     settlementId: draft.settlementId,
     authorizationId: draft.authorizationId ?? null,
     createdAt: draft.createdAt,
+    revisions: [
+      { revision: 1, amount: draft.amount, effectiveAt: draft.createdAt, recordedAt: draft.createdAt, reason: '' },
+    ],
   };
   state.payments.set(payment.id, payment);
   return payment;

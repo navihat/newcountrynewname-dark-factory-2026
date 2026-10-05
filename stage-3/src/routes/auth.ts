@@ -47,6 +47,7 @@ export function signup(ctx: Ctx) {
     displayName,
     passwordHash: hashPassword(password),
     balance: 0,
+    openingBalance: 0,
   };
   state.users.set(user.id, user);
   return session(201, user);

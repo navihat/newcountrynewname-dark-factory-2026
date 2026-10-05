@@ -1,6 +1,6 @@
 import { malformed, validation } from './errors';
 import type { Visibility } from './state';
-import { characterCount, type JsonObject } from './util';
+import { characterCount, parseInstant, type JsonObject } from './util';
 
 export const MAX_AMOUNT = 1_000_000_000;
 const MAX_NOTE_LENGTH = 200;
@@ -73,4 +73,22 @@ export function readEnum<T extends string>(query: URLSearchParams, name: string,
 
 export function page<T>(items: T[], { limit, offset }: Paging): { items: T[]; hasMore: boolean } {
   return { items: items.slice(offset, offset + limit), hasMore: offset + limit < items.length };
+}
+
+export interface Instant {
+  text: string;
+  ms: number;
+}
+
+/**
+ * An optional RFC 3339 query instant. A `+` offset sent unescaped arrives as a space, so a space
+ * right before the offset digits is read as `+`. Echo the text back as the caller meant it.
+ */
+export function readInstantParam(query: URLSearchParams, name: string): Instant | undefined {
+  const raw = query.get(name);
+  if (raw === null) return undefined;
+  const text = raw.replace(/ (\d{2}:\d{2})$/, '+$1');
+  const ms = parseInstant(text);
+  if (ms === null) throw validation(`${name} must be an RFC 3339 instant with an explicit offset`);
+  return { text, ms };
 }

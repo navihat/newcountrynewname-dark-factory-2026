@@ -1,7 +1,18 @@
+import { now } from './clock';
 import { validation } from './errors';
-import { HANDLE_PATTERN, MINOR_UNITS, readAuthorization, readPayment, readRequest, requireHoldsCovered } from './fixture';
+import {
+  HANDLE_PATTERN,
+  MINOR_UNITS,
+  readAuthorization,
+  readPayment,
+  readRequest,
+  requireHoldsCovered,
+  type TimeRules,
+} from './fixture';
 import { isPasswordHash } from './passwords';
 import * as read from './reader';
+import { deriveOpeningBalances } from './ledger';
+import { formatInstant } from './util';
 import { emptyState, idempotencyKey, type IdempotencyRecord, type State, type User } from './state';
 import { type JsonObject } from './util';
 
@@ -23,6 +34,7 @@ export function exportState(state: State): JsonObject {
         display_name: u.displayName,
         password_hash: u.passwordHash,
         balance: u.balance,
+        opening_balance: u.openingBalance,
       })),
       tokens: [...state.tokens].map(([token, userId]) => ({ token, user_id: userId })),
       payments: [...state.payments.values()].map((p) => ({
@@ -36,6 +48,13 @@ export function exportState(state: State): JsonObject {
         settlement_id: p.settlementId,
         authorization_id: p.authorizationId,
         created_at: p.createdAt,
+        revisions: p.revisions.map((r) => ({
+          revision: r.revision,
+          amount: r.amount,
+          effective_at: r.effectiveAt,
+          recorded_at: r.recordedAt,
+          reason: r.reason,
+        })),
       })),
       requests: [...state.requests.values()].map((r) => ({
         id: r.id,
@@ -57,8 +76,16 @@ export function exportState(state: State): JsonObject {
         visibility: a.visibility,
         status: a.status,
         expires_at: a.expiresAt,
+        closed_at: a.closedAt,
         payment_ids: a.paymentIds,
         created_at: a.createdAt,
+      })),
+      statements: [...state.statements].map(([token, s]) => ({
+        token,
+        user_id: s.userId,
+        opening_balance: s.openingBalance,
+        closing_balance: s.closingBalance,
+        entries: s.entries,
       })),
       idempotency: [...state.idempotency.values()].map((i) => ({
         user_id: i.userId,
@@ -82,6 +109,7 @@ export function importState(raw: JsonObject): State {
   const source = read.object(raw.state, 'state');
 
   const state = emptyState();
+  const rules: TimeRules = { defaultAt: formatInstant(now()), rejectFuture: false };
   state.currency = read.string(source.currency, 'currency');
   state.minorUnits = read.integer(source.minor_units, 'minor_units');
   if (!MINOR_UNITS.includes(state.minorUnits)) throw validation('minor_units must be 0, 2 or 3');
@@ -108,15 +136,16 @@ export function importState(raw: JsonObject): State {
     state.tokens.set(read.string(token.token, 'token'), userId);
   }
   for (const entry of read.array(source.payments, 'payments')) {
-    const payment = readPayment(entry, state);
+    const payment = readPayment(entry, state, rules);
     state.payments.set(payment.id, payment);
   }
+  deriveOpeningBalances(state);
   for (const entry of read.array(source.requests, 'requests')) {
     const request = readRequest(entry, state);
     state.requests.set(request.id, request);
   }
   for (const entry of read.array(source.authorizations ?? [], 'authorizations')) {
-    const authorization = readAuthorization(entry, state);
+    const authorization = readAuthorization(entry, state, rules);
     state.authorizations.set(authorization.id, authorization);
   }
   requireHoldsCovered(state);
@@ -126,6 +155,17 @@ export function importState(raw: JsonObject): State {
   }
   for (const operator of read.array(source.settlement_operator_ids, 'settlement_operator_ids')) {
     state.operatorIds.add(read.string(operator, 'settlement operator id'));
+  }
+  for (const entry of read.array(source.statements ?? [], 'statements')) {
+    const raw = read.object(entry, 'statement snapshot');
+    const userId = read.string(raw.user_id, 'statement user_id');
+    if (!state.users.has(userId)) throw validation(`statement snapshot refers to unknown user ${userId}`);
+    state.statements.set(read.string(raw.token, 'statement token'), {
+      userId,
+      openingBalance: read.integer(raw.opening_balance, 'statement opening_balance', -Number.MAX_SAFE_INTEGER),
+      closingBalance: read.integer(raw.closing_balance, 'statement closing_balance', -Number.MAX_SAFE_INTEGER),
+      entries: read.array(raw.entries, 'statement entries'),
+    });
   }
   const counters = read.object(source.counters, 'counters');
   for (const kind of Object.keys(state.counters) as (keyof State['counters'])[]) {
@@ -147,6 +187,7 @@ function readUser(entry: unknown): User {
     displayName: read.string(raw.display_name, 'user display_name'),
     passwordHash,
     balance: read.integer(raw.balance, 'user balance'),
+    openingBalance: read.optional(raw.opening_balance, (v) => read.integer(v, 'user opening_balance', -Number.MAX_SAFE_INTEGER), Number.NaN),
   };
 }
 

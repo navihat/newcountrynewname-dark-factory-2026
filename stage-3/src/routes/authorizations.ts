@@ -3,6 +3,7 @@ import { authed, json, parseJsonObject, parseOptionalJsonObject } from '../http'
 import { availableFunds, remainingAmount } from '../holds';
 import { runIdempotent } from '../idempotency';
 import { nextId, store, type Authorization, type AuthorizationStatus } from '../state';
+import { tick } from '../clock';
 import { formatInstant, nowRfc3339, type JsonObject } from '../util';
 import {
   page,
@@ -37,6 +38,7 @@ export function authorizationView(authorization: Authorization) {
     status: authorization.status,
     expires_at: authorization.expiresAt,
     payment_id: latest,
+    closed_at: authorization.closedAt,
     payment_ids: [...authorization.paymentIds],
     created_at: authorization.createdAt,
   };
@@ -63,7 +65,7 @@ export const createAuthorization = authed((ctx, user) => {
     const recipient = resolveOtherUser(user, toHandle, 'self_payment');
     if (availableFunds(state, user) < amount) throw insufficientFunds();
 
-    const createdMs = Date.now();
+    const createdMs = tick();
     const authorization: Authorization = {
       id: nextId(state, 'authorization'),
       fromUserId: user.id,
@@ -74,6 +76,7 @@ export const createAuthorization = authed((ctx, user) => {
       visibility,
       status: 'open',
       expiresAt: formatInstant(createdMs + state.authorizationTtlSeconds * 1000),
+      closedAt: null,
       paymentIds: [],
       createdAt: formatInstant(createdMs),
     };
@@ -128,6 +131,7 @@ export const captureAuthorization = authed((ctx, user, [id]) => {
     authorization.paymentIds.push(payment.id);
     if (request.final || authorization.capturedAmount === authorization.amount) {
       authorization.status = 'captured';
+      authorization.closedAt = payment.createdAt;
     }
     return paymentView(payment);
   });
@@ -136,8 +140,10 @@ export const captureAuthorization = authed((ctx, user, [id]) => {
 export const voidAuthorization = authed((_ctx, user, [id]) => {
   const authorization = requireAuthorization(id);
   if (authorization.fromUserId !== user.id) throw forbidden('only the payer may void');
-  if (authorization.status === 'open') authorization.status = 'voided';
-  else if (authorization.status !== 'voided') throw notOpen();
+  if (authorization.status === 'open') {
+    authorization.status = 'voided';
+    authorization.closedAt = nowRfc3339();
+  } else if (authorization.status !== 'voided') throw notOpen();
   return json(200, authorizationView(authorization));
 });
 

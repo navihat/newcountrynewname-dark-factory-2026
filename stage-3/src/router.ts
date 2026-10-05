@@ -13,6 +13,8 @@ import { login, signup } from './routes/auth';
 import { me } from './routes/me';
 import { createPayment } from './routes/payments';
 import { cancelRequest, createRequest, declineRequest, listRequests, payRequest } from './routes/requests';
+import { correctPayment, listRevisions } from './routes/corrections';
+import { statement } from './routes/statement';
 import { createSettlement } from './routes/settlements';
 import { createSplit } from './routes/splits';
 import { store } from './state';
@@ -47,6 +49,9 @@ const routes: Route[] = [
   route('POST', '/splits', createSplit),
   route('GET', '/activity', activity),
   route('POST', '/settlements', createSettlement),
+  route('GET', '/statement', statement),
+  route('POST', '/payments/:id/corrections', correctPayment),
+  route('GET', '/payments/:id/revisions', listRevisions),
   route('POST', '/authorizations', createAuthorization),
   route('GET', '/authorizations', listAuthorizations),
   route('POST', '/authorizations/:id/capture', captureAuthorization),
