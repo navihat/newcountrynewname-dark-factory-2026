@@ -101,9 +101,7 @@ export function importState(raw: JsonObject): State {
     state.idempotency.set(idempotencyKey(record.userId, record.method, record.path, record.key), record);
   }
   for (const operator of read.array(source.settlement_operator_ids, 'settlement_operator_ids')) {
-    const operatorId = read.string(operator, 'settlement operator id');
-    if (!state.users.has(operatorId)) throw validation(`unknown settlement operator ${operatorId}`);
-    state.operatorIds.add(operatorId);
+    state.operatorIds.add(read.string(operator, 'settlement operator id'));
   }
   const counters = read.object(source.counters, 'counters');
   for (const kind of Object.keys(state.counters) as (keyof State['counters'])[]) {

@@ -37,9 +37,7 @@ export function stateFromFixture(raw: JsonObject): State {
     state.requests.set(request.id, request);
   }
   for (const operator of read.array(raw.settlement_operator_ids ?? [], 'settlement_operator_ids')) {
-    const operatorId = read.string(operator, 'settlement operator id');
-    if (!state.users.has(operatorId)) throw validation(`unknown settlement operator ${operatorId}`);
-    state.operatorIds.add(operatorId);
+    state.operatorIds.add(read.string(operator, 'settlement operator id'));
   }
   return state;
 }

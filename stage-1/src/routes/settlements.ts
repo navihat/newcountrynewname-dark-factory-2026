@@ -3,7 +3,7 @@ import { authed, parseJsonObject } from '../http';
 import { runIdempotent } from '../idempotency';
 import { nextId, store, type User, type Visibility } from '../state';
 import { isObject, nowRfc3339, type JsonObject } from '../util';
-import { readAmount, readNote, readRequiredString, readVisibility } from '../validation';
+import { readAmount, readNote, readVisibility } from '../validation';
 import { paymentView, recordPayment, resolveUser } from '../wallet';
 
 const MAX_TRANSFERS = 32;
@@ -25,9 +25,16 @@ function readBatch(body: JsonObject): unknown[] {
   return transfers;
 }
 
+/** Inside a batch, a missing or non-string handle is a malformed batch shape (422). */
+function readEntryHandle(entry: JsonObject, field: string): string {
+  const value = entry[field];
+  if (typeof value !== 'string') throw validation(`${field} must be a string`);
+  return value;
+}
+
 function readTransfer(entry: JsonObject): Transfer {
-  const fromHandle = readRequiredString(entry, 'from_handle');
-  const toHandle = readRequiredString(entry, 'to_handle');
+  const fromHandle = readEntryHandle(entry, 'from_handle');
+  const toHandle = readEntryHandle(entry, 'to_handle');
   const amount = readAmount(entry);
   const note = readNote(entry);
   const visibility = readVisibility(entry);
