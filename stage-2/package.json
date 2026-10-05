@@ -5,7 +5,7 @@
   "description": "Pocketful stage 1: payments, requests, splits and settlements",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
     "start": "node dist/main.js"
   },
   "engines": { "node": ">=20" },

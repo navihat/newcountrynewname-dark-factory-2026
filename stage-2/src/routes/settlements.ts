@@ -1,6 +1,7 @@
 import { ApiError, forbidden, insufficientFunds, validation } from '../errors';
 import { authed, parseJsonObject } from '../http';
 import { runIdempotent } from '../idempotency';
+import { availableFunds } from '../holds';
 import { nextId, store, type User, type Visibility } from '../state';
 import { isObject, nowRfc3339, type JsonObject } from '../util';
 import { readAmount, readNote, readVisibility } from '../validation';
@@ -49,7 +50,7 @@ function requireNetAffordable(transfers: Transfer[]): void {
     net.set(from, (net.get(from) ?? 0) - amount);
     net.set(to, (net.get(to) ?? 0) + amount);
   }
-  for (const [user, delta] of net) if (user.balance + delta < 0) throw insufficientFunds();
+  for (const [user, delta] of net) if (availableFunds(store.state, user) + delta < 0) throw insufficientFunds();
 }
 
 export const createSettlement = authed((ctx, user) => {

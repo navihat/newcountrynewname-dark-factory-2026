@@ -16,6 +16,8 @@ export interface Reply {
   status: number;
   body?: unknown;
   raw?: string;
+  /** Overrides the JSON content type, for pages and assets. */
+  contentType?: string;
 }
 
 export type Handler = (ctx: Ctx, params: string[]) => Reply;

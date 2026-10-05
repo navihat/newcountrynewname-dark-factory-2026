@@ -1,12 +1,21 @@
 import { ApiError, notFound } from './errors';
+import { expireDue } from './holds';
+import { uiReply } from './ui';
 import { json, type Ctx, type Handler, type Reply } from './http';
 import { activity } from './routes/activity';
+import {
+  captureAuthorization,
+  createAuthorization,
+  listAuthorizations,
+  voidAuthorization,
+} from './routes/authorizations';
 import { login, signup } from './routes/auth';
 import { me } from './routes/me';
 import { createPayment } from './routes/payments';
 import { cancelRequest, createRequest, declineRequest, listRequests, payRequest } from './routes/requests';
 import { createSettlement } from './routes/settlements';
 import { createSplit } from './routes/splits';
+import { store } from './state';
 import { exportSnapshot, importSnapshot, reset } from './routes/testControl';
 
 interface Route {
@@ -38,10 +47,17 @@ const routes: Route[] = [
   route('POST', '/splits', createSplit),
   route('GET', '/activity', activity),
   route('POST', '/settlements', createSettlement),
+  route('POST', '/authorizations', createAuthorization),
+  route('GET', '/authorizations', listAuthorizations),
+  route('POST', '/authorizations/:id/capture', captureAuthorization),
+  route('POST', '/authorizations/:id/void', voidAuthorization),
 ];
 
 export function dispatch(ctx: Ctx): Reply {
   try {
+    expireDue(store.state);
+    const page = uiReply(ctx);
+    if (page) return page;
     let pathMatched = false;
     for (const { method, pattern, handler } of routes) {
       const match = pattern.exec(ctx.path);

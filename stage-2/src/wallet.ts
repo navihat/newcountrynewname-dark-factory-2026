@@ -1,4 +1,5 @@
 import { forbidden, insufficientFunds, notFound, ApiError } from './errors';
+import { availableFunds } from './holds';
 import {
   findUserByHandle,
   nextId,
@@ -30,6 +31,7 @@ export function paymentView(payment: Payment) {
     visibility: payment.visibility,
     request_id: payment.requestId,
     settlement_id: payment.settlementId,
+    authorization_id: payment.authorizationId,
     created_at: payment.createdAt,
   };
 }
@@ -67,7 +69,7 @@ export function resolveUser(handle: string): User {
 }
 
 export function requireFunds(user: User, amount: number): void {
-  if (user.balance < amount) throw insufficientFunds();
+  if (availableFunds(store.state, user) < amount) throw insufficientFunds();
 }
 
 export interface PaymentDraft {
@@ -78,6 +80,7 @@ export interface PaymentDraft {
   visibility: Visibility;
   requestId: string | null;
   settlementId: string | null;
+  authorizationId?: string | null;
   createdAt: string;
 }
 
@@ -95,6 +98,7 @@ export function recordPayment(draft: PaymentDraft): Payment {
     visibility: draft.visibility,
     requestId: draft.requestId,
     settlementId: draft.settlementId,
+    authorizationId: draft.authorizationId ?? null,
     createdAt: draft.createdAt,
   };
   state.payments.set(payment.id, payment);

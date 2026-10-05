@@ -32,6 +32,11 @@ function canonicalize(value: unknown): string {
   return JSON.stringify(value);
 }
 
+/** RFC 3339 instant with milliseconds and an explicit +00:00 offset. */
+export function formatInstant(epochMs: number): string {
+  return new Date(epochMs).toISOString().replace('Z', '+00:00');
+}
+
 export type JsonObject = Record<string, unknown>;
 
 export function isObject(value: unknown): value is JsonObject {

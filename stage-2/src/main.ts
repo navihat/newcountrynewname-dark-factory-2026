@@ -12,7 +12,8 @@ function send(res: ServerResponse, reply: Reply): void {
   }
   const payload = reply.raw ?? JSON.stringify(reply.body);
   res.writeHead(reply.status, {
-    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Type': reply.contentType ?? 'application/json; charset=utf-8',
+    ...(reply.contentType ? { 'Cache-Control': 'no-cache' } : {}),
     'Content-Length': Buffer.byteLength(payload),
   });
   res.end(payload);

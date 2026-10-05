@@ -1,5 +1,5 @@
 import { validation } from './errors';
-import { HANDLE_PATTERN, MINOR_UNITS, readPayment, readRequest } from './fixture';
+import { HANDLE_PATTERN, MINOR_UNITS, readAuthorization, readPayment, readRequest, requireHoldsCovered } from './fixture';
 import { isPasswordHash } from './passwords';
 import * as read from './reader';
 import { emptyState, idempotencyKey, type IdempotencyRecord, type State, type User } from './state';
@@ -15,6 +15,7 @@ export function exportState(state: State): JsonObject {
     state: {
       currency: state.currency,
       minor_units: state.minorUnits,
+      authorization_ttl_seconds: state.authorizationTtlSeconds,
       users: [...state.users.values()].map((u) => ({
         id: u.id,
         email: u.email,
@@ -33,6 +34,7 @@ export function exportState(state: State): JsonObject {
         visibility: p.visibility,
         request_id: p.requestId,
         settlement_id: p.settlementId,
+        authorization_id: p.authorizationId,
         created_at: p.createdAt,
       })),
       requests: [...state.requests.values()].map((r) => ({
@@ -44,6 +46,19 @@ export function exportState(state: State): JsonObject {
         status: r.status,
         payment_id: r.paymentId,
         created_at: r.createdAt,
+      })),
+      authorizations: [...state.authorizations.values()].map((a) => ({
+        id: a.id,
+        from_user_id: a.fromUserId,
+        to_user_id: a.toUserId,
+        amount: a.amount,
+        captured_amount: a.capturedAmount,
+        note: a.note,
+        visibility: a.visibility,
+        status: a.status,
+        expires_at: a.expiresAt,
+        payment_ids: a.paymentIds,
+        created_at: a.createdAt,
       })),
       idempotency: [...state.idempotency.values()].map((i) => ({
         user_id: i.userId,
@@ -71,6 +86,10 @@ export function importState(raw: JsonObject): State {
   state.minorUnits = read.integer(source.minor_units, 'minor_units');
   if (!MINOR_UNITS.includes(state.minorUnits)) throw validation('minor_units must be 0, 2 or 3');
 
+  if (source.authorization_ttl_seconds !== undefined) {
+    state.authorizationTtlSeconds = read.integer(source.authorization_ttl_seconds, 'authorization_ttl_seconds', 1);
+  }
+
   const emails = new Set<string>();
   const handles = new Set<string>();
   for (const entry of read.array(source.users, 'users')) {
@@ -96,6 +115,11 @@ export function importState(raw: JsonObject): State {
     const request = readRequest(entry, state);
     state.requests.set(request.id, request);
   }
+  for (const entry of read.array(source.authorizations ?? [], 'authorizations')) {
+    const authorization = readAuthorization(entry, state);
+    state.authorizations.set(authorization.id, authorization);
+  }
+  requireHoldsCovered(state);
   for (const entry of read.array(source.idempotency, 'idempotency')) {
     const record = readIdempotency(entry, state);
     state.idempotency.set(idempotencyKey(record.userId, record.method, record.path, record.key), record);
@@ -105,7 +129,7 @@ export function importState(raw: JsonObject): State {
   }
   const counters = read.object(source.counters, 'counters');
   for (const kind of Object.keys(state.counters) as (keyof State['counters'])[]) {
-    state.counters[kind] = read.integer(counters[kind], `counter ${kind}`);
+    state.counters[kind] = read.integer(counters[kind] ?? 0, `counter ${kind}`);
   }
   return state;
 }
