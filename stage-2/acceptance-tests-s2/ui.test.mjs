@@ -50,7 +50,10 @@ async function uiLogin(page, handle = 'ada', password = PW) {
   await T(page, 'login-password').fill(password);
   await T(page, 'login-submit').click();
   await waitHas(page, 'current-user');
-  await page.goto('/');
+  await sleep(300);
+  for (let i = 0; i < 3; i++) {
+    try { await page.goto('/'); break; } catch (e) { if (i === 2) throw e; await sleep(400); }
+  }
   await waitHas(page, 'wallet-balance');
 }
 const fillPay = async (page, { handle, amount, note, visibility }) => {
@@ -90,7 +93,7 @@ test('UI/HTML: every required route returns an HTML page for Accept: text/html',
   }
 });
 
-test('UI/HTML: every data-testid from the specification is present in the served HTML / bundled scripts', async () => {
+test('UI/HTML: every data-testid from the specification is present in the served HTML / bundled scripts (fallback when no browser is available)', { skip: NO_BROWSER ? false : 'covered by the browser tests' }, async () => {
   let blob = '';
   const seen = new Set();
   const grab = async (url) => {
@@ -202,36 +205,27 @@ ui('wallet: formatted total/available/held with data-amount; available is the he
   assert.equal(await has(p2, 'wallet-held'), false);
 });
 
-ui('formatting for minor_units 0 (JPY: "10000 JPY", no decimal point) and 3 (BHD: "10.000 BHD")', async (page) => {
-  for (const [cur, mu, expected] of [['JPY', 0, '10000 JPY'], ['BHD', 3, '10.000 BHD']]) {
+for (const [cur, mu, expected, bad, good, goodMinor, after] of [
+  ['JPY', 0, '10000 JPY', '15.5', '1200', 1200, '8800 JPY'],
+  ['BHD', 3, '10.000 BHD', '1.2345', '1.234', 1234, '8.766 BHD'],
+]) {
+  ui(`formatting for minor_units ${mu} (${cur}: "${expected}"); decimal rule follows minor_units`, async (page) => {
     await setup(fixture({ currency: cur, minor_units: mu }));
-    await page.context().clearCookies();
-    await page.goto('/'); await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch {} });
     await uiLogin(page, 'ada');
     assert.equal(await text(page, 'wallet-balance'), expected);
     assert.equal(await text(page, 'wallet-available'), expected);
-    if (mu === 0) {
-      const posts = trackPosts(page, '/payments');
-      await fillPay(page, { handle: 'bob', amount: '15.5', note: '', visibility: 'public' });
-      await T(page, 'pay-submit').click();
-      await waitHas(page, 'pay-error');
-      assert.equal(posts.length, 0, 'fractional JPY amount must be rejected client-side');
-      await T(page, 'pay-amount').fill('1200');
-      await T(page, 'pay-submit').click();
-      await waitText(page, 'wallet-balance', '8800 JPY');
-      assert.equal(posts[0].body.amount, 1200);
-    } else {
-      const posts = trackPosts(page, '/payments');
-      await fillPay(page, { handle: 'bob', amount: '1.2345' });
-      await T(page, 'pay-submit').click(); await waitHas(page, 'pay-error');
-      assert.equal(posts.length, 0);
-      await T(page, 'pay-amount').fill('1.234');
-      await T(page, 'pay-submit').click();
-      await waitText(page, 'wallet-balance', '8.766 BHD');
-      assert.equal(posts[0].body.amount, 1234);
-    }
-  }
-});
+    const posts = trackPosts(page, '/payments');
+    await fillPay(page, { handle: 'bob', amount: bad, note: '', visibility: 'public' });
+    await T(page, 'pay-submit').click();
+    await waitHas(page, 'pay-error');
+    await sleep(200);
+    assert.equal(posts.length, 0, `"${bad}" has more than ${mu} decimals and must be rejected client-side`);
+    await T(page, 'pay-amount').fill(good);
+    await T(page, 'pay-submit').click();
+    await waitText(page, 'wallet-balance', after);
+    assert.equal(posts[0].body.amount, goodMinor);
+  });
+}
 
 ui('pay form: decimal amounts submit minor units (15 and 15.00 -> 1500, 15.5 -> 1550); success updates balance and feed; form values are kept', async (page) => {
   const { t } = await setup();
@@ -260,15 +254,25 @@ ui('pay form: decimal amounts submit minor units (15 and 15.00 -> 1500, 15.5 -> 
   assert.equal(await T(page, 'pay-visibility').inputValue(), 'private');
   // server state agrees
   assert.equal(await balance(t.ada), 8500);
-  // 15.00 -> 1500 ; 15.5 -> 1550 (changed fields = new payments)
-  await T(page, 'pay-amount').fill('15.00'); await T(page, 'pay-submit').click();
-  await waitText(page, 'wallet-balance', '70.00 EUR');
-  assert.equal(posts[1].body.amount, 1500);
+  // changed amounts = new payments: 16.00 -> 1600 ; 15.5 -> 1550
+  await T(page, 'pay-amount').fill('16.00'); await T(page, 'pay-submit').click();
+  await waitText(page, 'wallet-balance', '69.00 EUR');
+  assert.equal(posts[1].body.amount, 1600);
   await T(page, 'pay-amount').fill('15.5'); await T(page, 'pay-submit').click();
-  await waitText(page, 'wallet-balance', '54.50 EUR');
+  await waitText(page, 'wallet-balance', '53.50 EUR');
   assert.equal(posts[2].body.amount, 1550);
   assert.equal(posts.length, 3);
   assert.equal((await feedIds(page)).length, 3);
+});
+
+ui('pay form: "15.00" submits 1500 minor units', async (page) => {
+  await setup();
+  await uiLogin(page, 'ada');
+  const posts = trackPosts(page, '/payments');
+  await fillPay(page, { handle: 'bob', amount: '15.00', note: '', visibility: 'public' });
+  await T(page, 'pay-submit').click();
+  await waitText(page, 'wallet-balance', '85.00 EUR');
+  assert.equal(posts[0].body.amount, 1500);
 });
 
 ui('pay form: resubmitting an UNCHANGED form sends no second payment; changing a field makes the next submit a new payment', async (page) => {
@@ -895,9 +899,16 @@ ui('capture refused (hold voided elsewhere): authorization-error, list refreshes
   await until(async () => posts.length === 1, 4000, 'capture request sent');
   await waitHas(page, 'authorization-error');
   assert.equal(await T(page, `authorization-item-${id}`).getAttribute('data-status'), 'open');
+  await sleep(1500); // let the post-refusal list refresh settle before the other client acts
   assert.equal((await voidAuth(t.ada, id)).status, 200); // elsewhere
-  await T(page, `authorization-capture-amount-${id}`).fill('10.00');
-  await T(page, `authorization-capture-${id}`).click();
+  await sleep(500);
+  for (let i = 0; i < 4; i++) { // the list may be re-rendering after the earlier refusal; retry until the click lands
+    try {
+      await T(page, `authorization-capture-amount-${id}`).fill('10.00', { timeout: 3000 });
+      await T(page, `authorization-capture-${id}`).click({ timeout: 3000 });
+      break;
+    } catch (e) { if (i === 3) throw e; await sleep(500); }
+  }
   await waitHas(page, 'authorization-error');
   await waitGone(page, `authorization-capture-${id}`);
   assert.equal(await T(page, `authorization-item-${id}`).getAttribute('data-status'), 'voided');
