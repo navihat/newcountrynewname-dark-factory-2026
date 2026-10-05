@@ -62,7 +62,7 @@ test('Concurrency: 25 identical corrections with ONE key — exactly one 201, ot
   assert.equal(created.length, 1);
   for (const r of rs) { assert.ok(r.status === 200 || r.status === 201, r.text); assert.deepEqual(r.json, created[0].json); }
   assert.equal((await revisions(t.ada, P.payment_id)).json.revisions.length, 2);
-  assert.equal(await balance(t.ada), 9600);
+  assert.equal(await balance(t.ada), 9400); // paid 1000, corrected to 600
 });
 
 test('Concurrency: a chain of competing correction rounds — each round exactly one winner, revisions strictly sequential, recorded_at strictly increasing', async () => {

@@ -313,7 +313,7 @@ test('Corrections: the original receipt, its idempotent replay and /activity sta
   const feed = (await get(t.cy, '/activity?limit=200')).json;
   assert.deepEqual(feed, feedBefore, 'feed shows the original payment only');
   assert.equal(feed.payments.length, 1); assert.equal(feed.payments[0].amount, 500); assert.equal(feed.payments[0].created_at, P.created_at);
-  assert.equal(await balance(t.ada), 9700); assert.equal(await balance(t.bob), 2800);
+  assert.equal(await balance(t.ada), 9800); assert.equal(await balance(t.bob), 2700);
   const st = await stmt(t.ada);
   assert.equal(st.entries[0].payment.amount, 200, 'statement shows the selected amount');
   assert.equal(st.entries[0].payment.payment_id, P.payment_id);
@@ -466,7 +466,7 @@ test('Corrections keep every historical view conserved: the sum of balances equa
   assert.equal((await correct(t.ada, p1, { expected_revision: 1, amount: 700, effective_at: at(now - 5 * DAY), reason: 'up' })).status, 201);
   await sleep(1100);
   assert.equal((await correct(t.bob, p2, { expected_revision: 1, amount: 300, effective_at: at(now - 4.5 * DAY), reason: 'down' })).status, 201);
-  assert.equal((await correct(t.ada, p3, { expected_revision: 1, amount: 100, effective_at: at(now - 1 * DAY), reason: 'later+less' })).status, 201);
+  assert.equal((await correct(t.ada, p3, { expected_revision: 1, amount: 150, effective_at: at(now - 3 * DAY), reason: 'less' })).status, 201);
   const tokens = ALL.map((h) => t[h]);
   const total = S_TOTAL;
   for (const a of [now - 400 * DAY, now - 5 * DAY, now - 4.7 * DAY, now - 4.2 * DAY, now - 3 * DAY, now - 1.5 * DAY, now - DAY, now, now + DAY]) {

@@ -64,7 +64,7 @@ export async function login(handle, password = PW) {
 }
 
 /** reset + log in a set of handles; returns { fx, t: {handle: token} } */
-export async function setup(fx = fixture(), handles = ['ada', 'bob', 'cy', 'dee', 'op']) {
+export async function setup(fx = fixture(), handles = ['ada', 'bob', 'cy', 'dee', 'op', 'zed']) {
   await reset(fx);
   const t = {};
   for (const h of handles) if (fx.users.some((u) => u.handle === h)) t[h] = await login(h);

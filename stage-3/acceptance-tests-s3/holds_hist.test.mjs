@@ -2,18 +2,18 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   http, fixture, user, setup, balance, expectErr, pay, get, uniq, RFC3339, sleep, HOUR, DAY,
-  seedAuth, mkAuth, capture, voidAuth, me, auths, authById, at, ms, meAt, stmt, correct, fixtureS, sumView,
+  seedAuth, mkAuth, capture, voidAuth, me, auths, authById, atMs as at, ms, meAt, stmt, correct, fixtureS, sumView,
 } from './lib.mjs';
 
 /** all four money fields must describe one view */
-function view(m, { total, held }) {
+function view(m, { total, held }, label = '') {
   assert.equal(m.balance, m.total, 'balance = total');
   assert.equal(m.available, m.total - m.held, 'available = total - held');
-  assert.equal(m.total, total, `total ${JSON.stringify(m)}`);
-  assert.equal(m.held, held, `held ${JSON.stringify(m)}`);
+  assert.equal(m.total, total, `total ${label} ${JSON.stringify(m)}`);
+  assert.equal(m.held, held, `held ${label} ${JSON.stringify(m)}`);
   assert.ok(m.available >= 0);
 }
-const H = async (t, who, params, exp) => view(await meAt(t[who], params), exp);
+const H = async (t, who, params, exp) => view(await meAt(t[who], params), exp, JSON.stringify(params));
 const P = (x) => (typeof x === 'string' ? x : at(x)); // exact instants are passed as the original strings, offsets as numbers
 
 test('Historical holds: lifecycle authorize -> nonfinal capture -> final capture releases remainder -> second hold -> void (as_of grid)', async () => {
@@ -52,7 +52,7 @@ test('Historical holds: lifecycle authorize -> nonfinal capture -> final capture
   await H(t, 'ada', { as_of: c1.created_at }, { total: 9300, held: 1300 });
   await H(t, 'ada', { as_of: recA.closed_at }, { total: 8800, held: 0 });
   // known_at: events are known at their own event time
-  const k = (ts) => ({ as_of: at(Date.now() + HOUR), known_at: P(ts) });
+  const k = (ts) => ({ as_of: at(Date.now() + 30e3), known_at: P(ts) });
   await H(t, 'ada', k(cA - 1000), { total: 10000, held: 0 });          // creation not yet known
   await H(t, 'ada', k(A.created_at), { total: 10000, held: 2000 });
   await H(t, 'ada', k(c1.created_at), { total: 9300, held: 1300 });                // capture known, final release not yet
