@@ -1,0 +1,7 @@
+node_modules
+dist
+acceptance-tests
+acceptance-tests-s2
+*.log
+.env
+
