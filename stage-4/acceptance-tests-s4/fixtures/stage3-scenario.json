@@ -1,0 +1,823 @@
+{
+ "now": 1791201393750,
+ "tokens": {
+  "ada": "1a7e81f3a0fe34007e873065184e838e355d36f201456aff8610b019b356d4bd",
+  "bob": "2f9bdce66712e2859a7c7df07dcfd69a64f01bf2c235bbbd73cf8724ca52a91f",
+  "cy": "2e6d5adac2b93313eb2fe20f8d53e53e2ee1cbb0a4c3b306743618eb2d20eca3",
+  "dee": "dca4123372607194353a10fcddd8767b97ee4e442180e3bdc9b6223abe676e0b",
+  "op": "0a0c2918e20feeb2addb572e452bdf3b16b168a84a5aacb4e96097040b9fc8ab",
+  "zed": "c6c3c389f50e4c083fa6a0aafb034c82d5ccdde489bfc3317482cb38b47e0ffa"
+ },
+ "keys": {
+  "request_pending": "s3-request_pending",
+  "lost_payment": "s3-lost_payment",
+  "private_payment": "s3-private_payment",
+  "settlement": "s3-settlement",
+  "auth_open": "s3-auth_open",
+  "capture": "s3-capture",
+  "correction_one": "s3-correction_one",
+  "correction_lost": "s3-correction_lost"
+ },
+ "bodies": {
+  "request_pending": {
+   "payer_handle": "ada",
+   "amount": 700,
+   "note": "taxi"
+  },
+  "lost_payment": {
+   "to_handle": "bob",
+   "amount": 1000,
+   "note": "lost response",
+   "visibility": "public"
+  },
+  "private_payment": {
+   "to_handle": "cy",
+   "amount": 50,
+   "note": "secret",
+   "visibility": "private"
+  },
+  "settlement": {
+   "transfers": [
+    {
+     "from_handle": "ada",
+     "to_handle": "bob",
+     "amount": 100,
+     "note": "m1"
+    },
+    {
+     "from_handle": "bob",
+     "to_handle": "cy",
+     "amount": 40,
+     "note": "m2"
+    },
+    {
+     "from_handle": "cy",
+     "to_handle": "dee",
+     "amount": 10,
+     "note": "m3"
+    }
+   ]
+  },
+  "auth_open": {
+   "to_handle": "bob",
+   "amount": 900,
+   "note": "hold"
+  },
+  "capture": {
+   "amount": 300,
+   "final": false
+  },
+  "correction_one": {
+   "expected_revision": 1,
+   "amount": 450,
+   "effective_at": "2026-09-30T11:56:33+00:00",
+   "reason": "typo"
+  },
+  "correction_lost": {
+   "expected_revision": 1,
+   "amount": 900,
+   "effective_at": "2026-10-05T11:56:35.080+00:00",
+   "reason": "refund-ish"
+  }
+ },
+ "paths": {
+  "request_pending": "/requests",
+  "lost_payment": "/payments",
+  "private_payment": "/payments",
+  "settlement": "/settlements",
+  "auth_open": "/authorizations",
+  "capture": "/authorizations/a_1/capture",
+  "correction_one": "/payments/p_1/corrections",
+  "correction_lost": "/payments/p_00000001/corrections"
+ },
+ "responses": {
+  "request_pending": {
+   "request_id": "rq_1",
+   "requester_id": "u_bob",
+   "requester_handle": "bob",
+   "payer_id": "u_ada",
+   "payer_handle": "ada",
+   "amount": 700,
+   "currency": "EUR",
+   "note": "taxi",
+   "status": "pending",
+   "payment_id": null,
+   "created_at": "2026-10-05T11:56:33.964+00:00"
+  },
+  "lost_payment": {
+   "payment_id": "p_00000001",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 1000,
+   "currency": "EUR",
+   "note": "lost response",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.080+00:00"
+  },
+  "private_payment": {
+   "payment_id": "p_00000002",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 50,
+   "currency": "EUR",
+   "note": "secret",
+   "visibility": "private",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.082+00:00"
+  },
+  "settlement": {
+   "settlement_id": "st_1",
+   "committed_at": "2026-10-05T11:56:35.086+00:00",
+   "payments": [
+    {
+     "payment_id": "p_00000003",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 100,
+     "currency": "EUR",
+     "note": "m1",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.086+00:00"
+    },
+    {
+     "payment_id": "p_00000004",
+     "from_user_id": "u_bob",
+     "from_handle": "bob",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 40,
+     "currency": "EUR",
+     "note": "m2",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.086+00:00"
+    },
+    {
+     "payment_id": "p_00000005",
+     "from_user_id": "u_cy",
+     "from_handle": "cy",
+     "to_user_id": "u_dee",
+     "to_handle": "dee",
+     "amount": 10,
+     "currency": "EUR",
+     "note": "m3",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.086+00:00"
+    }
+   ]
+  },
+  "auth_open": {
+   "authorization_id": "a_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 900,
+   "captured_amount": 0,
+   "remaining_amount": 900,
+   "currency": "EUR",
+   "note": "hold",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T12:06:35.091+00:00",
+   "payment_id": null,
+   "closed_at": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:56:35.091+00:00"
+  },
+  "capture": {
+   "payment_id": "p_00000006",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 300,
+   "currency": "EUR",
+   "note": "hold",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_1",
+   "created_at": "2026-10-05T11:56:35.093+00:00"
+  },
+  "correction_one": {
+   "payment_id": "p_1",
+   "revision": 2,
+   "amount": 450,
+   "effective_at": "2026-09-30T11:56:33+00:00",
+   "recorded_at": "2026-10-05T11:56:36.200+00:00",
+   "reason": "typo"
+  },
+  "correction_lost": {
+   "payment_id": "p_00000001",
+   "revision": 2,
+   "amount": 900,
+   "effective_at": "2026-10-05T11:56:35.080+00:00",
+   "recorded_at": "2026-10-05T11:56:36.203+00:00",
+   "reason": "refund-ish"
+  }
+ },
+ "ids": {
+  "one": "p_1",
+  "two": "p_2",
+  "three": "p_3",
+  "four": "p_4"
+ },
+ "pending_request_id": "rq_1",
+ "open_auth_id": "a_1",
+ "capture_payment_id": "p_00000006",
+ "balances": {
+  "ada": 8700,
+  "bob": 3710,
+  "cy": 280,
+  "dee": 510,
+  "op": 100000,
+  "zed": 0
+ },
+ "snapshot": "82649bf42066eac4ec62eaba2293d4e1bc60c6c5d867263b",
+ "snapshot_first_page": {
+  "opening_balance": 9600,
+  "entries": [
+   {
+    "payment": {
+     "payment_id": "p_1",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 450,
+     "currency": "EUR",
+     "note": "one",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-09-30T11:56:33+00:00"
+    },
+    "delta": -450,
+    "balance_after": 9150,
+    "revision": 2,
+    "effective_at": "2026-09-30T11:56:33+00:00",
+    "recorded_at": "2026-10-05T11:56:36.200+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_2",
+     "from_user_id": "u_bob",
+     "from_handle": "bob",
+     "to_user_id": "u_ada",
+     "to_handle": "ada",
+     "amount": 1200,
+     "currency": "EUR",
+     "note": "two",
+     "visibility": "private",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-01T11:56:33+00:00"
+    },
+    "delta": 1200,
+    "balance_after": 10350,
+    "revision": 1,
+    "effective_at": "2026-10-01T11:56:33+00:00",
+    "recorded_at": "2026-10-01T11:56:33+00:00"
+   }
+  ],
+  "closing_balance": 8700,
+  "has_more": true,
+  "snapshot": "82649bf42066eac4ec62eaba2293d4e1bc60c6c5d867263b"
+ },
+ "snapshot_full": {
+  "opening_balance": 9600,
+  "entries": [
+   {
+    "payment": {
+     "payment_id": "p_1",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 450,
+     "currency": "EUR",
+     "note": "one",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-09-30T11:56:33+00:00"
+    },
+    "delta": -450,
+    "balance_after": 9150,
+    "revision": 2,
+    "effective_at": "2026-09-30T11:56:33+00:00",
+    "recorded_at": "2026-10-05T11:56:36.200+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_2",
+     "from_user_id": "u_bob",
+     "from_handle": "bob",
+     "to_user_id": "u_ada",
+     "to_handle": "ada",
+     "amount": 1200,
+     "currency": "EUR",
+     "note": "two",
+     "visibility": "private",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-01T11:56:33+00:00"
+    },
+    "delta": 1200,
+    "balance_after": 10350,
+    "revision": 1,
+    "effective_at": "2026-10-01T11:56:33+00:00",
+    "recorded_at": "2026-10-01T11:56:33+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_3",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 300,
+     "currency": "EUR",
+     "note": "three",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-02T11:56:33+00:00"
+    },
+    "delta": -300,
+    "balance_after": 10050,
+    "revision": 1,
+    "effective_at": "2026-10-02T11:56:33+00:00",
+    "recorded_at": "2026-10-02T11:56:33+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000001",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 900,
+     "currency": "EUR",
+     "note": "lost response",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.080+00:00"
+    },
+    "delta": -900,
+    "balance_after": 9150,
+    "revision": 2,
+    "effective_at": "2026-10-05T11:56:35.080+00:00",
+    "recorded_at": "2026-10-05T11:56:36.203+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000002",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 50,
+     "currency": "EUR",
+     "note": "secret",
+     "visibility": "private",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.082+00:00"
+    },
+    "delta": -50,
+    "balance_after": 9100,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.082+00:00",
+    "recorded_at": "2026-10-05T11:56:35.082+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000003",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 100,
+     "currency": "EUR",
+     "note": "m1",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.086+00:00"
+    },
+    "delta": -100,
+    "balance_after": 9000,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.086+00:00",
+    "recorded_at": "2026-10-05T11:56:35.086+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000006",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 300,
+     "currency": "EUR",
+     "note": "hold",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": "a_1",
+     "created_at": "2026-10-05T11:56:35.093+00:00"
+    },
+    "delta": -300,
+    "balance_after": 8700,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.093+00:00",
+    "recorded_at": "2026-10-05T11:56:35.093+00:00"
+   }
+  ],
+  "closing_balance": 8700,
+  "has_more": false,
+  "snapshot": "82649bf42066eac4ec62eaba2293d4e1bc60c6c5d867263b"
+ },
+ "statement_ada": {
+  "opening_balance": 9600,
+  "entries": [
+   {
+    "payment": {
+     "payment_id": "p_1",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 450,
+     "currency": "EUR",
+     "note": "one",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-09-30T11:56:33+00:00"
+    },
+    "delta": -450,
+    "balance_after": 9150,
+    "revision": 2,
+    "effective_at": "2026-09-30T11:56:33+00:00",
+    "recorded_at": "2026-10-05T11:56:36.200+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_2",
+     "from_user_id": "u_bob",
+     "from_handle": "bob",
+     "to_user_id": "u_ada",
+     "to_handle": "ada",
+     "amount": 1200,
+     "currency": "EUR",
+     "note": "two",
+     "visibility": "private",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-01T11:56:33+00:00"
+    },
+    "delta": 1200,
+    "balance_after": 10350,
+    "revision": 1,
+    "effective_at": "2026-10-01T11:56:33+00:00",
+    "recorded_at": "2026-10-01T11:56:33+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_3",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 300,
+     "currency": "EUR",
+     "note": "three",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-02T11:56:33+00:00"
+    },
+    "delta": -300,
+    "balance_after": 10050,
+    "revision": 1,
+    "effective_at": "2026-10-02T11:56:33+00:00",
+    "recorded_at": "2026-10-02T11:56:33+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000001",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 900,
+     "currency": "EUR",
+     "note": "lost response",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.080+00:00"
+    },
+    "delta": -900,
+    "balance_after": 9150,
+    "revision": 2,
+    "effective_at": "2026-10-05T11:56:35.080+00:00",
+    "recorded_at": "2026-10-05T11:56:36.203+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000002",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 50,
+     "currency": "EUR",
+     "note": "secret",
+     "visibility": "private",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.082+00:00"
+    },
+    "delta": -50,
+    "balance_after": 9100,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.082+00:00",
+    "recorded_at": "2026-10-05T11:56:35.082+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000003",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 100,
+     "currency": "EUR",
+     "note": "m1",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:56:35.086+00:00"
+    },
+    "delta": -100,
+    "balance_after": 9000,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.086+00:00",
+    "recorded_at": "2026-10-05T11:56:35.086+00:00"
+   },
+   {
+    "payment": {
+     "payment_id": "p_00000006",
+     "from_user_id": "u_ada",
+     "from_handle": "ada",
+     "to_user_id": "u_bob",
+     "to_handle": "bob",
+     "amount": 300,
+     "currency": "EUR",
+     "note": "hold",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": null,
+     "authorization_id": "a_1",
+     "created_at": "2026-10-05T11:56:35.093+00:00"
+    },
+    "delta": -300,
+    "balance_after": 8700,
+    "revision": 1,
+    "effective_at": "2026-10-05T11:56:35.093+00:00",
+    "recorded_at": "2026-10-05T11:56:35.093+00:00"
+   }
+  ],
+  "closing_balance": 8700,
+  "has_more": false,
+  "snapshot": "780664afcefc7d46fcb55d527b4ed93aa6024df19e0adf56"
+ },
+ "revisions": {
+  "p_1": [
+   {
+    "payment_id": "p_1",
+    "revision": 1,
+    "amount": 500,
+    "effective_at": "2026-09-30T11:56:33+00:00",
+    "recorded_at": "2026-09-30T11:56:33+00:00",
+    "reason": ""
+   },
+   {
+    "payment_id": "p_1",
+    "revision": 2,
+    "amount": 450,
+    "effective_at": "2026-09-30T11:56:33+00:00",
+    "recorded_at": "2026-10-05T11:56:36.200+00:00",
+    "reason": "typo"
+   }
+  ],
+  "p_00000001": [
+   {
+    "payment_id": "p_00000001",
+    "revision": 1,
+    "amount": 1000,
+    "effective_at": "2026-10-05T11:56:35.080+00:00",
+    "recorded_at": "2026-10-05T11:56:35.080+00:00",
+    "reason": ""
+   },
+   {
+    "payment_id": "p_00000001",
+    "revision": 2,
+    "amount": 900,
+    "effective_at": "2026-10-05T11:56:35.080+00:00",
+    "recorded_at": "2026-10-05T11:56:36.203+00:00",
+    "reason": "refund-ish"
+   }
+  ]
+ },
+ "activity_ada": [
+  {
+   "payment_id": "p_00000006",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 300,
+   "currency": "EUR",
+   "note": "hold",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_1",
+   "created_at": "2026-10-05T11:56:35.093+00:00"
+  },
+  {
+   "payment_id": "p_00000005",
+   "from_user_id": "u_cy",
+   "from_handle": "cy",
+   "to_user_id": "u_dee",
+   "to_handle": "dee",
+   "amount": 10,
+   "currency": "EUR",
+   "note": "m3",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": "st_1",
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.086+00:00"
+  },
+  {
+   "payment_id": "p_00000004",
+   "from_user_id": "u_bob",
+   "from_handle": "bob",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 40,
+   "currency": "EUR",
+   "note": "m2",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": "st_1",
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.086+00:00"
+  },
+  {
+   "payment_id": "p_00000003",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 100,
+   "currency": "EUR",
+   "note": "m1",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": "st_1",
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.086+00:00"
+  },
+  {
+   "payment_id": "p_00000002",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 50,
+   "currency": "EUR",
+   "note": "secret",
+   "visibility": "private",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.082+00:00"
+  },
+  {
+   "payment_id": "p_00000001",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 1000,
+   "currency": "EUR",
+   "note": "lost response",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:56:35.080+00:00"
+  },
+  {
+   "payment_id": "p_4",
+   "from_user_id": "u_cy",
+   "from_handle": "cy",
+   "to_user_id": "u_dee",
+   "to_handle": "dee",
+   "amount": 100,
+   "currency": "EUR",
+   "note": "four",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-03T11:56:33+00:00"
+  },
+  {
+   "payment_id": "p_3",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 300,
+   "currency": "EUR",
+   "note": "three",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-02T11:56:33+00:00"
+  },
+  {
+   "payment_id": "p_2",
+   "from_user_id": "u_bob",
+   "from_handle": "bob",
+   "to_user_id": "u_ada",
+   "to_handle": "ada",
+   "amount": 1200,
+   "currency": "EUR",
+   "note": "two",
+   "visibility": "private",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-01T11:56:33+00:00"
+  },
+  {
+   "payment_id": "p_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 500,
+   "currency": "EUR",
+   "note": "one",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-09-30T11:56:33+00:00"
+  }
+ ]
+}

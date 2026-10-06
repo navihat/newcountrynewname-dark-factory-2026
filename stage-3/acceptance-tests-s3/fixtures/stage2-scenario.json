@@ -1,0 +1,459 @@
+{
+ "tokens": {
+  "ada": "51b096600263d224a299ccd7484ff7e13da921fbd9d7d8d191397121e7d59d30",
+  "bob": "ff25e069b47e804bfea11de0e26651ed9454aaf0bc82c2d71acf7a6708239346",
+  "cy": "2359d1902eeec50a40bb8c1bef61d0e52aa544fcc5fd7cd6f31c52a50fcee7e0",
+  "dee": "d7d14de5003d1907cda1e4df19775ae668810b9345796dedf4af5b9b8a6be599",
+  "op": "27e584667d0fbc489f49e7bc865263ac96f4b307aeb5d23daf2855ae7f7975b6"
+ },
+ "zed": {
+  "user_id": "u_1",
+  "display_name": "Zed",
+  "token": "fbd8047d27a8ef884dce303998e1bebb649fc4fd4ce39be9c124c76f3851543f"
+ },
+ "keys": {
+  "request_pending": "s2-request_pending",
+  "lost_payment": "s2-lost_payment",
+  "private_payment": "s2-private_payment",
+  "settlement": "s2-settlement",
+  "auth_open": "s2-auth_open",
+  "capture_nonfinal": "s2-capture_nonfinal",
+  "auth_captured": "s2-auth_captured",
+  "capture_final": "s2-capture_final",
+  "auth_voided": "s2-auth_voided"
+ },
+ "bodies": {
+  "request_pending": {
+   "payer_handle": "ada",
+   "amount": 700,
+   "note": "taxi"
+  },
+  "lost_payment": {
+   "to_handle": "bob",
+   "amount": 1000,
+   "note": "lost response",
+   "visibility": "public"
+  },
+  "private_payment": {
+   "to_handle": "cy",
+   "amount": 50,
+   "note": "secret",
+   "visibility": "private"
+  },
+  "settlement": {
+   "transfers": [
+    {
+     "from_handle": "op",
+     "to_handle": "cy",
+     "amount": 25
+    }
+   ]
+  },
+  "auth_open": {
+   "to_handle": "bob",
+   "amount": 2000,
+   "note": "open hold"
+  },
+  "capture_nonfinal": {
+   "amount": 700,
+   "final": false
+  },
+  "auth_captured": {
+   "to_handle": "cy",
+   "amount": 300,
+   "note": "to capture"
+  },
+  "capture_final": {
+   "amount": 100
+  },
+  "auth_voided": {
+   "to_handle": "dee",
+   "amount": 200
+  }
+ },
+ "paths": {
+  "request_pending": "/requests",
+  "lost_payment": "/payments",
+  "private_payment": "/payments",
+  "settlement": "/settlements",
+  "auth_open": "/authorizations",
+  "capture_nonfinal": "/authorizations/a_1/capture",
+  "auth_captured": "/authorizations",
+  "capture_final": "/authorizations/a_2/capture",
+  "auth_voided": "/authorizations"
+ },
+ "responses": {
+  "request_pending": {
+   "request_id": "rq_1",
+   "requester_id": "u_bob",
+   "requester_handle": "bob",
+   "payer_id": "u_ada",
+   "payer_handle": "ada",
+   "amount": 700,
+   "currency": "EUR",
+   "note": "taxi",
+   "status": "pending",
+   "payment_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  "lost_payment": {
+   "payment_id": "p_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 1000,
+   "currency": "EUR",
+   "note": "lost response",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  "private_payment": {
+   "payment_id": "p_2",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 50,
+   "currency": "EUR",
+   "note": "secret",
+   "visibility": "private",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  "settlement": {
+   "settlement_id": "st_1",
+   "committed_at": "2026-10-05T11:13:28+00:00",
+   "payments": [
+    {
+     "payment_id": "p_3",
+     "from_user_id": "u_op",
+     "from_handle": "op",
+     "to_user_id": "u_cy",
+     "to_handle": "cy",
+     "amount": 25,
+     "currency": "EUR",
+     "note": "",
+     "visibility": "public",
+     "request_id": null,
+     "settlement_id": "st_1",
+     "authorization_id": null,
+     "created_at": "2026-10-05T11:13:28+00:00"
+    }
+   ]
+  },
+  "auth_open": {
+   "authorization_id": "a_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 2000,
+   "captured_amount": 0,
+   "remaining_amount": 2000,
+   "currency": "EUR",
+   "note": "open hold",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T11:23:28.055+00:00",
+   "payment_id": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:13:28.055+00:00"
+  },
+  "capture_nonfinal": {
+   "payment_id": "p_4",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 700,
+   "currency": "EUR",
+   "note": "open hold",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_1",
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  "auth_captured": {
+   "authorization_id": "a_2",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 300,
+   "captured_amount": 0,
+   "remaining_amount": 300,
+   "currency": "EUR",
+   "note": "to capture",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T11:23:28.058+00:00",
+   "payment_id": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:13:28.058+00:00"
+  },
+  "capture_final": {
+   "payment_id": "p_5",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 100,
+   "currency": "EUR",
+   "note": "to capture",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_2",
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  "auth_voided": {
+   "authorization_id": "a_3",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_dee",
+   "to_handle": "dee",
+   "amount": 200,
+   "captured_amount": 0,
+   "remaining_amount": 200,
+   "currency": "EUR",
+   "note": "",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T11:23:28.062+00:00",
+   "payment_id": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:13:28.062+00:00"
+  }
+ },
+ "pending_request_id": "rq_1",
+ "open_auth_id": "a_1",
+ "capture_payment_id": "p_4",
+ "voided_auth_id": "a_3",
+ "balances": {
+  "ada": 8150,
+  "bob": 4200,
+  "cy": 175,
+  "dee": 500,
+  "op": 99975,
+  "zed": 0
+ },
+ "me": {
+  "ada": {
+   "user_id": "u_ada",
+   "display_name": "ADA",
+   "handle": "ada",
+   "balance": 8150,
+   "total": 8150,
+   "available": 5350,
+   "held": 2800,
+   "currency": "EUR",
+   "minor_units": 2
+  },
+  "bob": {
+   "user_id": "u_bob",
+   "display_name": "BOB",
+   "handle": "bob",
+   "balance": 4200,
+   "total": 4200,
+   "available": 4200,
+   "held": 0,
+   "currency": "EUR",
+   "minor_units": 2
+  },
+  "cy": {
+   "user_id": "u_cy",
+   "display_name": "CY",
+   "handle": "cy",
+   "balance": 175,
+   "total": 175,
+   "available": 175,
+   "held": 0,
+   "currency": "EUR",
+   "minor_units": 2
+  },
+  "dee": {
+   "user_id": "u_dee",
+   "display_name": "DEE",
+   "handle": "dee",
+   "balance": 500,
+   "total": 500,
+   "available": 500,
+   "held": 0,
+   "currency": "EUR",
+   "minor_units": 2
+  },
+  "op": {
+   "user_id": "u_op",
+   "display_name": "OP",
+   "handle": "op",
+   "balance": 99975,
+   "total": 99975,
+   "available": 99975,
+   "held": 0,
+   "currency": "EUR",
+   "minor_units": 2
+  }
+ },
+ "activity_ada": [
+  {
+   "payment_id": "p_5",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 100,
+   "currency": "EUR",
+   "note": "to capture",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_2",
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  {
+   "payment_id": "p_4",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 700,
+   "currency": "EUR",
+   "note": "open hold",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": "a_1",
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  {
+   "payment_id": "p_3",
+   "from_user_id": "u_op",
+   "from_handle": "op",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 25,
+   "currency": "EUR",
+   "note": "",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": "st_1",
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  {
+   "payment_id": "p_2",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 50,
+   "currency": "EUR",
+   "note": "secret",
+   "visibility": "private",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  },
+  {
+   "payment_id": "p_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 1000,
+   "currency": "EUR",
+   "note": "lost response",
+   "visibility": "public",
+   "request_id": null,
+   "settlement_id": null,
+   "authorization_id": null,
+   "created_at": "2026-10-05T11:13:28+00:00"
+  }
+ ],
+ "authorizations_ada": [
+  {
+   "authorization_id": "a_3",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_dee",
+   "to_handle": "dee",
+   "amount": 200,
+   "captured_amount": 0,
+   "remaining_amount": 0,
+   "currency": "EUR",
+   "note": "",
+   "visibility": "public",
+   "status": "voided",
+   "expires_at": "2026-10-05T11:23:28.062+00:00",
+   "payment_id": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:13:28.062+00:00"
+  },
+  {
+   "authorization_id": "a_2",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_cy",
+   "to_handle": "cy",
+   "amount": 300,
+   "captured_amount": 100,
+   "remaining_amount": 0,
+   "currency": "EUR",
+   "note": "to capture",
+   "visibility": "public",
+   "status": "captured",
+   "expires_at": "2026-10-05T11:23:28.058+00:00",
+   "payment_id": "p_5",
+   "payment_ids": [
+    "p_5"
+   ],
+   "created_at": "2026-10-05T11:13:28.058+00:00"
+  },
+  {
+   "authorization_id": "a_1",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 2000,
+   "captured_amount": 700,
+   "remaining_amount": 1300,
+   "currency": "EUR",
+   "note": "open hold",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T11:23:28.055+00:00",
+   "payment_id": "p_4",
+   "payment_ids": [
+    "p_4"
+   ],
+   "created_at": "2026-10-05T11:13:28.055+00:00"
+  },
+  {
+   "authorization_id": "a_seed",
+   "from_user_id": "u_ada",
+   "from_handle": "ada",
+   "to_user_id": "u_bob",
+   "to_handle": "bob",
+   "amount": 1500,
+   "captured_amount": 0,
+   "remaining_amount": 1500,
+   "currency": "EUR",
+   "note": "seeded hold",
+   "visibility": "public",
+   "status": "open",
+   "expires_at": "2026-10-05T13:13:27+00:00",
+   "payment_id": null,
+   "payment_ids": [],
+   "created_at": "2026-10-05T11:13:27+00:00"
+  }
+ ]
+}

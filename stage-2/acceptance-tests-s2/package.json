@@ -1,0 +1,6 @@
+{
+  "name": "pocketful-stage2-acceptance",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test index.test.mjs", "test:api": "node --test index.api.test.mjs" }
+}
